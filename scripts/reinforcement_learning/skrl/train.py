@@ -51,7 +51,8 @@ parser.add_argument(
     "--algorithm",
     type=str,
     default="PPO",
-    choices=["AMP", "PPO", "IPPO", "MAPPO"],
+    # 新增 DDPG：off-policy 演算法，適合連續控制任務（如機械手臂操作）
+    choices=["AMP", "PPO", "IPPO", "MAPPO", "DDPG"],
     help="The RL algorithm used for training the skrl agent.",
 )
 parser.add_argument(
@@ -122,6 +123,8 @@ logger = logging.getLogger(__name__)
 # config shortcuts
 if args_cli.agent is None:
     algorithm = args_cli.algorithm.lower()
+    # PPO 使用預設的 skrl_cfg_entry_point；其他演算法（DDPG 等）使用專屬的 entry point
+    # 舊邏輯：agent_cfg_entry_point = "skrl_cfg_entry_point" if algorithm in ["ppo"] else f"skrl_{algorithm}_cfg_entry_point"
     agent_cfg_entry_point = "skrl_cfg_entry_point" if algorithm in ["ppo"] else f"skrl_{algorithm}_cfg_entry_point"
 else:
     agent_cfg_entry_point = args_cli.agent
@@ -147,7 +150,13 @@ def main(env_cfg: ManagerBasedRLEnvCfg | DirectRLEnvCfg | DirectMARLEnvCfg, agen
         env_cfg.sim.device = f"cuda:{app_launcher.local_rank}"
     # max iterations for training
     if args_cli.max_iterations:
-        agent_cfg["trainer"]["timesteps"] = args_cli.max_iterations * agent_cfg["agent"]["rollouts"]
+        # PPO 等 on-policy 演算法使用 rollouts 換算；
+        # DDPG 等 off-policy 演算法沒有 rollouts，直接以 max_iterations 作為 timesteps
+        if "rollouts" in agent_cfg["agent"]:
+            agent_cfg["trainer"]["timesteps"] = args_cli.max_iterations * agent_cfg["agent"]["rollouts"]
+        else:
+            agent_cfg["trainer"]["timesteps"] = args_cli.max_iterations
+
     agent_cfg["trainer"]["close_environment_at_exit"] = False
     # configure the ML framework into the global skrl variable
     if args_cli.ml_framework.startswith("jax"):
@@ -203,6 +212,31 @@ def main(env_cfg: ManagerBasedRLEnvCfg | DirectRLEnvCfg | DirectMARLEnvCfg, agen
     # convert to single-agent instance if required by the RL algorithm
     if isinstance(env.unwrapped, DirectMARLEnv) and algorithm in ["ppo"]:
         env = multi_agent_to_single_agent(env)
+
+
+    # Fix DDPG action bounds before wrapping with SKRL.
+    # IsaacLab's action space can expose None for low/high bounds, but SKRL DDPG
+    # calls torch.clamp(min, max) when learning starts. Giving the environment
+    # an explicit Box(-1, 1) action space prevents the crash at learning_starts.
+    if algorithm == "ddpg":
+        import numpy as np
+
+        if hasattr(env.unwrapped, "action_manager"):
+            action_dim = env.unwrapped.action_manager.total_action_dim
+        elif getattr(env.action_space, "shape", None) is not None:
+            action_dim = env.action_space.shape[0]
+        else:
+            action_dim = 15
+
+        bounded_action_space = gym.spaces.Box(
+            low=-1.0,
+            high=1.0,
+            shape=(action_dim,),
+            dtype=np.float32,
+        )
+
+        # ManagerBasedRLEnv usually stores the per-env action space here.
+        env.unwrapped.single_action_space = bounded_action_space
 
     # wrap for video recording
     if args_cli.video:

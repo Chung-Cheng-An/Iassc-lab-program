@@ -135,29 +135,54 @@ class EventCfg:
 class RewardsCfg:
     """Reward terms for the MDP."""
 
-    reaching_object = RewTerm(func=mdp.object_ee_distance, params={"std": 0.1}, weight=1.0)
+    # 新增明確的實體抓取獎勵
+    grasping_object = RewTerm(
+        func=mdp.object_grasping,
+        params={"distance_threshold": 0.12, "finger_trigger_pos": 0.5},
+        weight=10,
+    )
 
-    lifting_object = RewTerm(func=mdp.object_is_lifted, params={"minimal_height": 0.04}, weight=15.0)
+    reaching_object = RewTerm(
+        func=mdp.object_ee_distance_bimanual,
+        params={"std": 0.05},
+        weight=0.25,
+    )
 
+    lifting_object = RewTerm(func=mdp.object_is_lifted, params={"minimal_height": 0.02}, weight=60.0)
+
+    # 新增：防傾倒懲罰 (已註解，降低初期學習難度)
+    # upright_penalty = RewTerm(
+    #     func=mdp.object_upright_penalty,
+    #     weight=-2.0,
+    # )
+
+    # 恢復原本單純的「送到空中的目標點」
     object_goal_tracking = RewTerm(
         func=mdp.object_goal_distance,
         params={"std": 0.3, "minimal_height": 0.04, "command_name": "object_pose"},
-        weight=16.0,
+        weight=25.0,
     )
 
     object_goal_tracking_fine_grained = RewTerm(
         func=mdp.object_goal_distance,
         params={"std": 0.05, "minimal_height": 0.04, "command_name": "object_pose"},
-        weight=5.0,
+        weight=10.0,
     )
 
     # action penalty
-    action_rate = RewTerm(func=mdp.action_rate_l2, weight=-1e-4)
+    action_rate = RewTerm(func=mdp.action_rate_l2, weight=-0.01)
 
     joint_vel = RewTerm(
         func=mdp.joint_vel_l2,
-        weight=-1e-4,
+        weight=-0.005,
         params={"asset_cfg": SceneEntityCfg("robot")},
+    )
+
+    # 物體速度懲罰：防止手臂把方塊打飛（超過 0.5 m/s 才開始扣分）
+    object_velocity = RewTerm(
+        func=mdp.object_velocity_penalty,
+        params={"max_velocity": 0.5},  # 只懲罰超過 1.5 m/s 的暴力撞擊，正常舉起不受影響
+        weight=-10.0,
     )
 
 
@@ -210,7 +235,7 @@ class LiftEnvCfg(ManagerBasedRLEnvCfg):
         """Post initialization."""
         # general settings
         self.decimation = 2
-        self.episode_length_s = 5.0
+        self.episode_length_s = 6.0
         # simulation settings
         self.sim.dt = 0.01  # 100Hz
         self.sim.render_interval = self.decimation

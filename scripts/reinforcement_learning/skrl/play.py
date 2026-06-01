@@ -53,7 +53,8 @@ parser.add_argument(
     "--algorithm",
     type=str,
     default="PPO",
-    choices=["AMP", "PPO", "IPPO", "MAPPO"],
+    # 新增 DDPG：off-policy 演算法，適合連續控制任務（如機械手臂操作）
+    choices=["AMP", "PPO", "IPPO", "MAPPO", "DDPG"],
     help="The RL algorithm used for training the skrl agent.",
 )
 parser.add_argument("--real-time", action="store_true", default=False, help="Run in real-time, if possible.")
@@ -118,6 +119,8 @@ from isaaclab_tasks.utils.hydra import hydra_task_config
 # config shortcuts
 if args_cli.agent is None:
     algorithm = args_cli.algorithm.lower()
+    # PPO 使用預設的 skrl_cfg_entry_point；其他演算法（DDPG 等）使用專屬的 entry point
+    # 舊邏輯：agent_cfg_entry_point = "skrl_cfg_entry_point" if algorithm in ["ppo"] else f"skrl_{algorithm}_cfg_entry_point"
     agent_cfg_entry_point = "skrl_cfg_entry_point" if algorithm in ["ppo"] else f"skrl_{algorithm}_cfg_entry_point"
 else:
     agent_cfg_entry_point = args_cli.agent

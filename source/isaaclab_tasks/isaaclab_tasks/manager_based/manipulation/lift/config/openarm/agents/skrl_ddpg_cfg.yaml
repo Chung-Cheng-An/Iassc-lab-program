@@ -1,0 +1,73 @@
+seed: 42
+
+# Models are instantiated using skrl's model instantiator utility
+models:
+  separate: True
+
+  policy:
+    class: DeterministicMixin
+    clip_actions: False
+    network:
+      - name: net
+        input: OBSERVATIONS
+        layers: [256, 256]
+        activations: relu
+    output: ACTIONS
+
+  value:
+    class: DeterministicMixin
+    clip_actions: False
+    network:
+      - name: net
+        input: concatenate((OBSERVATIONS, ACTIONS))
+        layers: [256, 256]
+        activations: relu
+    output: ONE
+
+memory:
+  class: RandomMemory
+  memory_size: 1000000
+
+agent:
+  class: DDPG
+
+  # IMPORTANT:
+  # Your IsaacLab action space currently returns None for action bounds.
+  # DDPG's default action clipping will call torch.clamp(min=None, max=None)
+  # and crash. Keep this False unless your env provides Box low/high bounds.
+  #clip_actions: False
+
+  gradient_steps: 1
+  batch_size: 256
+  discount_factor: 0.99
+  polyak: 0.005
+
+  # Use a single scalar learning rate for skrl 2.x.
+  learning_rate: 1.0e-3
+  learning_rate_scheduler: null
+
+  observation_preprocessor: RunningStandardScaler
+  observation_preprocessor_kwargs: null
+
+  random_timesteps: 1000
+  learning_starts: 1000
+  grad_norm_clip: 1.0
+
+  exploration_noise: GaussianNoise
+  exploration_noise_kwargs:
+    mean: 0.0
+    std: 0.1
+
+  # Noise scale schedule
+  exploration_scheduler: "max(0, 1 - timestep / timesteps)"
+
+  experiment:
+    directory: "openarm_ddpg"
+    experiment_name: ""
+    write_interval: auto
+    checkpoint_interval: auto
+
+trainer:
+  class: SequentialTrainer
+  timesteps: 1000000
+  environment_info: log

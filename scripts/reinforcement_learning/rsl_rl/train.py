@@ -12,7 +12,6 @@ import sys
 
 from isaaclab.app import AppLauncher
 
-# local imports
 import cli_args  # isort: skip
 
 # add argparse arguments

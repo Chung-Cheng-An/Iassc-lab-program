@@ -33,7 +33,7 @@ from isaaclab.utils.assets import ISAAC_NUCLEUS_DIR
 
 OPENARM_BI_CFG = ArticulationCfg(
     spawn=sim_utils.UsdFileCfg(
-        usd_path=f"{ISAAC_NUCLEUS_DIR}/Robots/OpenArm/openarm_bimanual/openarm_bimanual.usd",
+        usd_path="C:/Users/user/Desktop/IsaacLab/openarm_isaac_lab/source/openarm/openarm/tasks/manager_based/openarm_manipulation/usds/openarm_bimanual/openarm_bimanual.usd",
         rigid_props=sim_utils.RigidBodyPropertiesCfg(
             disable_gravity=False,
             max_depenetration_velocity=5.0,
@@ -101,7 +101,7 @@ OPENARM_BI_CFG = ArticulationCfg(
 
 OPENARM_UNI_CFG = ArticulationCfg(
     spawn=sim_utils.UsdFileCfg(
-        usd_path=f"{ISAAC_NUCLEUS_DIR}/Robots/OpenArm/openarm_unimanual/openarm_unimanual.usd",
+        usd_path="C:/Users/user/Desktop/IsaacLab/openarm_isaac_lab/source/openarm/openarm/tasks/manager_based/openarm_manipulation/usds/openarm_unimanual/openarm_unimanual.usd",
         rigid_props=sim_utils.RigidBodyPropertiesCfg(
             disable_gravity=False,
             max_depenetration_velocity=5.0,
