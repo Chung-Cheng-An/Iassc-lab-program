@@ -1,6 +1,7 @@
 seed: 42
 
 # Models are instantiated using skrl's model instantiator utility
+# DDPG requires 4 models: policy, target_policy, critic, target_critic
 models:
   separate: True
 
@@ -14,7 +15,27 @@ models:
         activations: relu
     output: ACTIONS
 
-  value:
+  target_policy:
+    class: DeterministicMixin
+    clip_actions: False
+    network:
+      - name: net
+        input: OBSERVATIONS
+        layers: [256, 256]
+        activations: relu
+    output: ACTIONS
+
+  critic:
+    class: DeterministicMixin
+    clip_actions: False
+    network:
+      - name: net
+        input: concatenate((OBSERVATIONS, ACTIONS))
+        layers: [256, 256]
+        activations: relu
+    output: ONE
+
+  target_critic:
     class: DeterministicMixin
     clip_actions: False
     network:

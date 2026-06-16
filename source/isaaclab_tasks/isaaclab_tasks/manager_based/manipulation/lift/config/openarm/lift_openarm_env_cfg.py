@@ -112,11 +112,11 @@ class ObservationsCfg:
 
         joint_pos = ObsTerm(
             func=mdp.joint_pos_rel,
-            params={"asset_cfg": SceneEntityCfg("robot", joint_names=["openarm_left_joint.*", "openarm_right_joint.*", "openarm_left_finger_joint.*", "openarm_right_finger_joint.*"])},
+            params={"asset_cfg": SceneEntityCfg("robot", joint_names=["openarm_joint.*", "openarm_finger_joint.*"])},
         )
         joint_vel = ObsTerm(
             func=mdp.joint_vel_rel,
-            params={"asset_cfg": SceneEntityCfg("robot", joint_names=["openarm_left_joint.*", "openarm_right_joint.*", "openarm_left_finger_joint.*", "openarm_right_finger_joint.*"])},
+            params={"asset_cfg": SceneEntityCfg("robot", joint_names=["openarm_joint.*", "openarm_finger_joint.*"])},
         )
         object_position = ObsTerm(func=mdp.object_position_in_robot_root_frame)
         target_object_position = ObsTerm(func=mdp.generated_commands, params={"command_name": "object_pose"})
@@ -140,7 +140,7 @@ class EventCfg:
         func=mdp.reset_root_state_uniform,
         mode="reset",
         params={
-            #"pose_range": {"x": (-0.1, 0.1), "y": (-0.25, 0.25), "z": (0.0, 0.0)},
+            # "pose_range": {"x": (-0.1, 0.1), "y": (-0.25, 0.25), "z": (0.0, 0.0)},
             "pose_range": {"x": (0.0, 0.0), "y": (0.0, 0.0), "z": (0.0, 0.0)},
             "velocity_range": {},
             "asset_cfg": SceneEntityCfg("object", body_names="Object"),
@@ -152,16 +152,7 @@ class EventCfg:
 class RewardsCfg:
     """Reward terms for the MDP."""
 
-    # --- 階段一（Reaching）：接近物體 ---
-    reaching_object = RewTerm(func=mdp.object_ee_distance_bimanual, params={"std": 0.1}, weight=1.1)
-
-    # --- 階段二（Grasping + Lifting）：夾取並抬起 ---
-    # 使用 OpenArm 專用的雙臂夾取偵測（動態過濾 finger 關節，閉合條件為 < 0.02）
-    grasping_object = RewTerm(
-        func=mdp.openarm_object_grasping,
-        params={"distance_threshold": 0.15, "finger_trigger_pos": 0.02},
-        weight=10.0,
-    )
+    reaching_object = RewTerm(func=mdp.object_ee_distance, params={"std": 0.1}, weight=1.1)
 
     lifting_object = RewTerm(func=mdp.object_is_lifted, params={"minimal_height": 0.04}, weight=15.0)
 
@@ -183,7 +174,7 @@ class RewardsCfg:
     joint_vel = RewTerm(
         func=mdp.joint_vel_l2,
         weight=-1e-4,
-        params={"asset_cfg": SceneEntityCfg("robot", joint_names=["openarm_left_joint.*", "openarm_right_joint.*", "openarm_left_finger_joint.*", "openarm_right_finger_joint.*"])},
+        params={"asset_cfg": SceneEntityCfg("robot", joint_names=["openarm_joint.*", "openarm_finger_joint.*"])},
     )
 
 
