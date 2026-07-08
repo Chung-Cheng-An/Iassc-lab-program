@@ -85,7 +85,7 @@ class CommandsCfg:
         ranges=mdp.UniformPoseCommandCfg.Ranges(
             pos_x=(0.2, 0.4),
             pos_y=(-0.2, 0.2),
-            pos_z=(0.15, 0.4),
+            pos_z=(0.35, 0.6),
             roll=(0.0, 0.0),
             pitch=(0.0, 0.0),
             yaw=(0.0, 0.0),
@@ -154,17 +154,19 @@ class RewardsCfg:
 
     reaching_object = RewTerm(func=mdp.object_ee_distance, params={"std": 0.1}, weight=1.1)
 
-    lifting_object = RewTerm(func=mdp.object_is_lifted, params={"minimal_height": 0.04}, weight=15.0)
+    lifting_object = RewTerm(func=mdp.object_is_lifted, params={"minimal_height": 0.15}, weight=15.0)
+
+    object_tilt = RewTerm(func=mdp.object_tilt_penalty, params={"tilt_angle_limit": 45.0}, weight=-3.0)
 
     object_goal_tracking = RewTerm(
         func=mdp.object_goal_distance,
-        params={"std": 0.3, "minimal_height": 0.04, "command_name": "object_pose"},
+        params={"std": 0.3, "minimal_height": 0.15, "command_name": "object_pose"},
         weight=16.0,
     )
 
     object_goal_tracking_fine_grained = RewTerm(
         func=mdp.object_goal_distance,
-        params={"std": 0.05, "minimal_height": 0.04, "command_name": "object_pose"},
+        params={"std": 0.05, "minimal_height": 0.15, "command_name": "object_pose"},
         weight=5.0,
     )
 
@@ -239,3 +241,11 @@ class LiftEnvCfg(ManagerBasedRLEnvCfg):
         self.sim.physx.gpu_found_lost_aggregate_pairs_capacity = 1024 * 1024 * 4
         self.sim.physx.gpu_total_aggregate_pairs_capacity = 16 * 1024
         self.sim.physx.friction_correlation_distance = 0.00625
+        self.sim.physx.gpu_max_rigid_patch_count = 2**19  # Increase buffer size to prevent PhysX Patch buffer overflow with bimanual robot
+
+        # Set high friction scene-wide so contacts between robot fingers and the cup don't slip
+        self.sim.physics_material = sim_utils.RigidBodyMaterialCfg(
+            static_friction=1.5,
+            dynamic_friction=1.5,
+            restitution=0.0,
+        )

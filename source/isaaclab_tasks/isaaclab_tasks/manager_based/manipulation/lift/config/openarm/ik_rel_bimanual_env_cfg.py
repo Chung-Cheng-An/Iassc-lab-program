@@ -155,6 +155,12 @@ class OpenArmBimanualCubeLiftIKEnvCfg(OpenArmCubeLiftEnvCfg):
             ],
         )
 
+        # ------------------------------------------------------------------
+        # Override depth camera prim path for bimanual robot
+        # ------------------------------------------------------------------
+        if hasattr(self.scene, "depth_camera") and self.scene.depth_camera is not None:
+            self.scene.depth_camera.prim_path = "{ENV_REGEX_NS}/Robot/openarm_right_ee_tcp/depth_camera"
+
 
 @configclass
 class OpenArmBimanualCubeLiftIKEnvCfg_PLAY(OpenArmBimanualCubeLiftIKEnvCfg):

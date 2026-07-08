@@ -159,10 +159,25 @@ def compose_fabric_transformation_matrix_from_warp_arrays(
         scale[1] = array_scales[index, 1]
         scale[2] = array_scales[index, 2]
     # set transform matrix (need transpose for column-major ordering)
-    # Using transform_compose as wp.matrix() is deprecated
-    fabric_matrices[fabric_index] = wp.mat44d(  # type: ignore[arg-type]
-        wp.transpose(wp.transform_compose(position, rotation, scale))  # type: ignore[arg-type]
+    # Manually compose mat44 since wp.transform_compose is not available in Warp 1.5.0
+    # Convert quaternion to 3x3 rotation matrix
+    rot_mat = wp.quat_to_matrix(rotation)  # type: ignore[arg-type]
+    # Apply scale to each column of the rotation matrix
+    # rot_mat[row, col], rows are 0,1,2 and cols are 0,1,2
+    # Column 0 (X axis) scaled by scale[0]
+    # Column 1 (Y axis) scaled by scale[1]
+    # Column 2 (Z axis) scaled by scale[2]
+    # Build mat44 in row-major (Warp stores row-major, Fabric needs column-major so we transpose)
+    # The composed transform matrix (column-major) layout:
+    #   [R*Sx  R*Sy  R*Sz  Pos]
+    # We build row-major then transpose for column-major Fabric storage
+    m = wp.mat44f(  # type: ignore[arg-type]
+        rot_mat[0, 0] * scale[0], rot_mat[0, 1] * scale[1], rot_mat[0, 2] * scale[2], position[0],
+        rot_mat[1, 0] * scale[0], rot_mat[1, 1] * scale[1], rot_mat[1, 2] * scale[2], position[1],
+        rot_mat[2, 0] * scale[0], rot_mat[2, 1] * scale[1], rot_mat[2, 2] * scale[2], position[2],
+        float(0.0), float(0.0), float(0.0), float(1.0),
     )
+    fabric_matrices[fabric_index] = wp.mat44d(wp.transpose(m))  # type: ignore[arg-type]
 
 
 @wp.func

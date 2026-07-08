@@ -188,6 +188,17 @@ def main(env_cfg: ManagerBasedRLEnvCfg | DirectRLEnvCfg | DirectMARLEnvCfg, agen
             obs, _, dones, _ = env.step(actions)
             # reset recurrent states for episodes that have terminated
             policy_nn.reset(dones)
+
+            # --- Print joint positions every 100 steps (temporary) ---
+            timestep += 1
+            if timestep % 100 == 0:
+                robot = env.unwrapped.scene["robot"]
+                jp = robot.data.joint_pos[0, :7].cpu().tolist()
+                names = ["joint1", "joint2", "joint3", "joint4", "joint5", "joint6", "joint7"]
+                print(f"\n[Step {timestep}] Joint positions (env 0):")
+                for n, v in zip(names, jp):
+                    print(f"  {n}: {v:.4f}")
+            # --- End temporary print ---
         if args_cli.video:
             timestep += 1
             # Exit the play loop after recording one video
