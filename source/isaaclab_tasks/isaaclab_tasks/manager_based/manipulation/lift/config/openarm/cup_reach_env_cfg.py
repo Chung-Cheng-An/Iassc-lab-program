@@ -24,16 +24,34 @@ from isaaclab_tasks.manager_based.manipulation.lift.config.openarm.joint_pos_env
 
 @configclass
 class CupReachRewardsCfg:
-    """Rewards for Stage 1: approach the cup."""
+    """Rewards for Stage 1: approach and envelop the cup (ready for immediate grasp)."""
 
-    # Primary: get the end-effector close to the cup
-    reaching_object = RewTerm(func=mdp.object_ee_distance, params={"std": 0.1, "z_offset": 0.055}, weight=3.0)
+    # Primary: 直接引導末端滑入杯腰中心 (z_offset=0.055, approach_offset=0.0)，雙指深入包覆水杯兩側，讓下一步可直接合爪夾取！
+    reaching_object = RewTerm(
+        func=mdp.object_ee_distance,
+        params={"std": 0.15, "z_offset": 0.055, "approach_offset": 0.0, "approach_yaw": 0.0},
+        weight=6.0,
+    )
 
-    # Orientation: force horizontal (flat) alignment to align with cup body
-    ee_align = RewTerm(func=mdp.ee_align_cup_grasp_flat, weight=2.0)
+    # Orientation: 手掌對齊正面水平推進 (雙指開口水平正對水杯，杯腰置入兩指正中)
+    ee_align = RewTerm(
+        func=mdp.ee_align_cup_grasp_flat,
+        params={"approach_yaw": 0.0, "tool_axis": "z", "clamping_axis": "y"},
+        weight=2.0,
+    )
 
-    # Penalty for tipping the cup over (tilt > 45 degrees)
-    object_tilt = RewTerm(func=mdp.object_tilt_penalty, params={"tilt_angle_limit": 45.0}, weight=-3.0)
+    # Human Posture Prior: 懲罰手肘外翻旋轉 (joint3 偏離 0.0 自然下垂垂直角度)，強制維持真人自然姿態！
+    elbow_human_prior = RewTerm(
+        func=mdp.joint_deviation_l1,
+        weight=-0.5,
+        params={"asset_cfg": SceneEntityCfg("robot", joint_names=["openarm_right_joint3"])},
+    )
+
+    # Soft Landing: 進入杯身 10cm 內獎勵關節平滑減速，避免撞翻杯子
+    soft_landing = RewTerm(func=mdp.ee_soft_landing_near_object, params={"distance_threshold": 0.10}, weight=2.0)
+
+    # Penalty: 杯子傾斜超過 15 度早期扣分警示
+    object_tilt = RewTerm(func=mdp.object_tilt_penalty, params={"tilt_angle_limit": 15.0}, weight=-3.0)
 
     # Regularisation
     action_rate = RewTerm(func=mdp.action_rate_l2, weight=-1e-4)
@@ -60,11 +78,14 @@ class CupReachTerminationsCfg:
         params={"minimum_height": -0.05, "asset_cfg": SceneEntityCfg("object")},
     )
 
-    # Success: EE within 1.5 cm of cup
-    ee_reached = DoneTerm(
-        func=mdp.ee_reached_object,
-        params={"threshold": 0.005, "z_offset": 0.055},
+    # 硬性失敗終止：杯子傾斜超過 20 度立刻判失敗結束回合 (GAME OVER)
+    cup_toppled = DoneTerm(
+        func=mdp.cup_tilted,
+        params={"tilt_limit": 20.0, "object_cfg": SceneEntityCfg("object")},
     )
+
+    # 移除 ee_reached 提早結束！讓手臂抵達杯腰後持續停留在杯旁賺取滿分獎勵，學會「死死定格、絕不後縮」！
+    ee_reached = None
 
 
 ##
@@ -89,8 +110,18 @@ class CupReachEnvCfg(OpenArmCubeLiftEnvCfg):
         # regardless of what the RL policy outputs. This preserves action dimensions.
         self.actions.gripper_action.close_command_expr = {"openarm_right_finger_joint.*": 0.044}
 
-        # Longer episode: agent needs time to navigate
-        self.episode_length_s = 8.0
+        # 5.0 秒回合 (250 steps)：手臂前 35 步滑入杯腰，後續 200+ 步全程定格包覆水杯
+        self.episode_length_s = 5.0
+
+        # 開啟桌面杯子位置隨機化 (方案 B：擴大抗位移汎化能力)
+        # X 範圍: 0.22m ~ 0.28m (基準 0.25m ± 3cm，前後共 6 公分)
+        # Y 範圍: -0.04m ~ +0.04m (基準 0.00m ± 4cm，左右共 8 公分)
+        # Z 範圍: 0.0 (嚴格緊貼桌面，不彈跳、不掉落)
+        self.events.reset_object_position.params["pose_range"] = {
+            "x": (-0.03, 0.03),
+            "y": (-0.04, 0.04),
+            "z": (0.0, 0.0),
+        }
 
 
 @configclass

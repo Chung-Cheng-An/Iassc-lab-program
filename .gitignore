@@ -73,3 +73,20 @@ tests/
 # TacSL sensor
 **/tactile_record/*
 **/gelsight_r15_data/*
+
+# Models & Weights
+*.pt
+*.pth
+*.onnx
+
+# Scratch scripts
+scratch/
+
+# Temporary media & pointclouds
+*.ply
+source/isaaclab_tasks/**/head_cam_*.png
+source/isaaclab_tasks/**/cup_water_preview.png
+source/isaaclab_tasks/**/pure_depth_cup_perception.png
+source/isaaclab_tasks/**/*.txt
+
+

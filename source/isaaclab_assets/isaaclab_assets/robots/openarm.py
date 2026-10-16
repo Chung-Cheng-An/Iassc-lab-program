@@ -39,7 +39,7 @@ OPENARM_BI_CFG = ArticulationCfg(
             max_depenetration_velocity=5.0,
         ),
         articulation_props=sim_utils.ArticulationRootPropertiesCfg(
-            enabled_self_collisions=True,
+            enabled_self_collisions=False,
             solver_position_iteration_count=8,
             solver_velocity_iteration_count=0,
         ),
@@ -99,6 +99,8 @@ OPENARM_BI_CFG = ArticulationCfg(
 )
 """Configuration of OpenArm Bimanual robot."""
 
+# OPENARM_BI_TURNTABLE_CFG removed
+
 OPENARM_UNI_CFG = ArticulationCfg(
     spawn=sim_utils.UsdFileCfg(
         usd_path="C:/Users/user/Desktop/IsaacLab/openarm_isaac_lab/source/openarm/openarm/tasks/manager_based/openarm_manipulation/usds/openarm_unimanual/openarm_unimanual.usd",
@@ -107,7 +109,7 @@ OPENARM_UNI_CFG = ArticulationCfg(
             max_depenetration_velocity=5.0,
         ),
         articulation_props=sim_utils.ArticulationRootPropertiesCfg(
-            enabled_self_collisions=True,
+            enabled_self_collisions=False,
             solver_position_iteration_count=8,
             solver_velocity_iteration_count=0,
         ),

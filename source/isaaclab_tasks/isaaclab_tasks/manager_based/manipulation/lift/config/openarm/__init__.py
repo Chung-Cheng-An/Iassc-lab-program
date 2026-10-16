@@ -37,31 +37,6 @@ gym.register(
     disable_env_checker=True,
 )
 
-##
-# IK Control - Bimanual (OpenArm Dual Arm with Differential IK)
-##
-
-gym.register(
-    id="Isaac-Lift-Cube-OpenArm-Bimanual-IK-v0",
-    entry_point="isaaclab.envs:ManagerBasedRLEnv",
-    kwargs={
-        "env_cfg_entry_point": f"{__name__}.ik_rel_bimanual_env_cfg:OpenArmBimanualCubeLiftIKEnvCfg",
-        "rsl_rl_cfg_entry_point": f"{agents.__name__}.rsl_rl_ppo_cfg:OpenArmLiftCubePPORunnerCfg",
-        "skrl_cfg_entry_point": f"{agents.__name__}:skrl_ddpg_cfg.yaml",
-    },
-    disable_env_checker=True,
-)
-
-gym.register(
-    id="Isaac-Lift-Cube-OpenArm-Bimanual-IK-Play-v0",
-    entry_point="isaaclab.envs:ManagerBasedRLEnv",
-    kwargs={
-        "env_cfg_entry_point": f"{__name__}.ik_rel_bimanual_env_cfg:OpenArmBimanualCubeLiftIKEnvCfg_PLAY",
-        "rsl_rl_cfg_entry_point": f"{agents.__name__}.rsl_rl_ppo_cfg:OpenArmLiftCubePPORunnerCfg",
-        "skrl_cfg_entry_point": f"{agents.__name__}:skrl_ddpg_cfg.yaml",
-    },
-    disable_env_checker=True,
-)
 
 ##
 # Cup Curriculum — Stage 1: Reach
@@ -135,27 +110,51 @@ gym.register(
     disable_env_checker=True,
 )
 
+
 ##
-# Cup Curriculum — Stage 4: Transport
+# Cup Curriculum — Stage 4: Rotate
 ##
 
 gym.register(
-    id="Isaac-Cup-Transport-OpenArm-v0",
+    id="Isaac-OpenArm-Rotate-v0",
     entry_point="isaaclab.envs:ManagerBasedRLEnv",
     kwargs={
-        "env_cfg_entry_point": f"{__name__}.cup_transport_env_cfg:CupTransportEnvCfg",
+        "env_cfg_entry_point": f"{__name__}.cup_rotate_env_cfg:OpenArmRotateEnvCfg",
         "rsl_rl_cfg_entry_point": f"{agents.__name__}.rsl_rl_ppo_cfg:OpenArmLiftCubePPORunnerCfg",
     },
     disable_env_checker=True,
 )
 
 gym.register(
-    id="Isaac-Cup-Transport-OpenArm-Play-v0",
+    id="Isaac-OpenArm-Rotate-Play-v0",
     entry_point="isaaclab.envs:ManagerBasedRLEnv",
     kwargs={
-        "env_cfg_entry_point": f"{__name__}.cup_transport_env_cfg:CupTransportEnvCfg_PLAY",
+        "env_cfg_entry_point": f"{__name__}.cup_rotate_env_cfg:OpenArmRotateEnvCfg_PLAY",
         "rsl_rl_cfg_entry_point": f"{agents.__name__}.rsl_rl_ppo_cfg:OpenArmLiftCubePPORunnerCfg",
     },
     disable_env_checker=True,
 )
 
+##
+# Cup Curriculum — Stage 5: lica
+##
+
+gym.register(
+    id="Isaac-OpenArm-lica-v0",
+    entry_point="isaaclab.envs:ManagerBasedRLEnv",
+    kwargs={
+        "env_cfg_entry_point": f"{__name__}.cup_lica_env:OpenArmRotateEnvCfg",
+        "rsl_rl_cfg_entry_point": f"{agents.__name__}.rsl_rl_ppo_cfg:OpenArmLiftCubePPORunnerCfg",
+    },
+    disable_env_checker=True,
+)
+
+gym.register(
+    id="Isaac-OpenArm-Rotate-Play-v0",
+    entry_point="isaaclab.envs:ManagerBasedRLEnv",
+    kwargs={
+        "env_cfg_entry_point": f"{__name__}.cup_rotate_env_cfg:OpenArmRotateEnvCfg_PLAY",
+        "rsl_rl_cfg_entry_point": f"{agents.__name__}.rsl_rl_ppo_cfg:OpenArmLiftCubePPORunnerCfg",
+    },
+    disable_env_checker=True,
+)

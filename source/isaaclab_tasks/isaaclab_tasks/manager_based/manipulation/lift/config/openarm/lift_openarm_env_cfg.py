@@ -21,6 +21,7 @@ from isaaclab.managers import RewardTermCfg as RewTerm
 from isaaclab.managers import SceneEntityCfg
 from isaaclab.managers import TerminationTermCfg as DoneTerm
 from isaaclab.scene import InteractiveSceneCfg
+from isaaclab.sensors import CameraCfg
 from isaaclab.sensors.frame_transformer.frame_transformer_cfg import FrameTransformerCfg
 from isaaclab.sim.spawners.from_files.from_files_cfg import GroundPlaneCfg, UsdFileCfg
 from isaaclab.utils import configclass
@@ -46,6 +47,9 @@ class ObjectTableSceneCfg(InteractiveSceneCfg):
     ee_frame: FrameTransformerCfg = MISSING
     # target object: will be populated by agent env cfg
     object: RigidObjectCfg | DeformableObjectCfg = MISSING
+    # optional camera sensor & physical 3D visual body
+    head_cam: CameraCfg | None = None
+    head_cam_visual: AssetBaseCfg | None = None
 
     # Table
     table = AssetBaseCfg(
@@ -81,7 +85,7 @@ class CommandsCfg:
         asset_name="robot",
         body_name=MISSING,  # will be set by agent env cfg
         resampling_time_range=(5.0, 5.0),
-        debug_vis=True,
+        debug_vis=False,
         ranges=mdp.UniformPoseCommandCfg.Ranges(
             pos_x=(0.2, 0.4),
             pos_y=(-0.2, 0.2),
@@ -143,7 +147,7 @@ class EventCfg:
             # "pose_range": {"x": (-0.1, 0.1), "y": (-0.25, 0.25), "z": (0.0, 0.0)},
             "pose_range": {"x": (0.0, 0.0), "y": (0.0, 0.0), "z": (0.0, 0.0)},
             "velocity_range": {},
-            "asset_cfg": SceneEntityCfg("object", body_names="Object"),
+            "asset_cfg": SceneEntityCfg("object", body_names=".*"),
         },
     )
 
@@ -241,7 +245,7 @@ class LiftEnvCfg(ManagerBasedRLEnvCfg):
         self.sim.physx.gpu_found_lost_aggregate_pairs_capacity = 1024 * 1024 * 4
         self.sim.physx.gpu_total_aggregate_pairs_capacity = 16 * 1024
         self.sim.physx.friction_correlation_distance = 0.00625
-        self.sim.physx.gpu_max_rigid_patch_count = 2**19  # Increase buffer size to prevent PhysX Patch buffer overflow with bimanual robot
+        self.sim.physx.gpu_max_rigid_patch_count = 2**20  # Increase buffer size to prevent PhysX Patch buffer overflow with bimanual robot
 
         # Set high friction scene-wide so contacts between robot fingers and the cup don't slip
         self.sim.physics_material = sim_utils.RigidBodyMaterialCfg(

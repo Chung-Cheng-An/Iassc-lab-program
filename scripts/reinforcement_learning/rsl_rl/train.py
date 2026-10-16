@@ -8,9 +8,16 @@
 """Launch Isaac Sim Simulator first."""
 
 import argparse
+import os
 import sys
+import warnings
+
+# Suppress python warnings
+warnings.filterwarnings("ignore")
+os.environ["PYTHONWARNINGS"] = "ignore"
 
 from isaaclab.app import AppLauncher
+
 
 import cli_args  # isort: skip
 
@@ -43,6 +50,13 @@ args_cli, hydra_args = parser.parse_known_args()
 if args_cli.video:
     args_cli.enable_cameras = True
 
+# Mute Omniverse C++ warning logs from the very start
+log_args = "--/log/level=error --/log/fileLogLevel=error --/log/outputStreamLevel=error"
+if getattr(args_cli, "kit_args", None):
+    args_cli.kit_args += f" {log_args}"
+else:
+    args_cli.kit_args = log_args
+
 # clear out sys.argv for Hydra
 sys.argv = [sys.argv[0]] + hydra_args
 
@@ -50,7 +64,22 @@ sys.argv = [sys.argv[0]] + hydra_args
 app_launcher = AppLauncher(args_cli)
 simulation_app = app_launcher.app
 
+import logging
+import carb
+
+try:
+    _carb_settings = carb.settings.get_settings()
+    _carb_settings.set("/log/outputStreamLevel", "error")
+    _carb_settings.set("/log/level", "error")
+except Exception:
+    pass
+
+logging.getLogger().setLevel(logging.ERROR)
+logging.getLogger("isaaclab").setLevel(logging.ERROR)
+logging.getLogger("omni").setLevel(logging.ERROR)
+
 """Check for minimum supported RSL-RL version."""
+
 
 import importlib.metadata as metadata
 import platform

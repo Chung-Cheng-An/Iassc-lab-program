@@ -94,10 +94,17 @@ rem -----------------------------------------------------------------------
 
 rem extract the python from isaacsim
 :extract_python_exe
-rem check if using conda
+rem check if using conda or virtualenv
 if not "%CONDA_PREFIX%"=="" (
     rem use conda python
     set python_exe=%CONDA_PREFIX%\python.exe
+) else if not "%VIRTUAL_ENV%"=="" (
+    rem use virtualenv python
+    set python_exe=%VIRTUAL_ENV%\Scripts\python.exe
+    if not exist "!python_exe!" set python_exe=%VIRTUAL_ENV%\python.exe
+) else if exist "C:\Users\user\Desktop\env_isaaclab\Scripts\python.exe" (
+    rem use default env_isaaclab python
+    set python_exe=C:\Users\user\Desktop\env_isaaclab\Scripts\python.exe
 ) else (
     rem use kit python
     set python_exe=%ISAACLAB_PATH%\_isaac_sim\python.bat

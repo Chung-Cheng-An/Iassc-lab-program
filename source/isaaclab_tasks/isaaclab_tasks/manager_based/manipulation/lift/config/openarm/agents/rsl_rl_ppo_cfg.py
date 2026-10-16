@@ -15,7 +15,7 @@ class OpenArmLiftCubePPORunnerCfg(RslRlOnPolicyRunnerCfg):
     max_iterations = 2000
     save_interval = 50
     experiment_name = "openarm_lift"
-    empirical_normalization = False
+    empirical_normalization = True
     policy = RslRlPpoActorCriticCfg(
         init_noise_std=1.0,
         actor_hidden_dims=[256, 128, 64],
@@ -30,7 +30,7 @@ class OpenArmLiftCubePPORunnerCfg(RslRlOnPolicyRunnerCfg):
         num_learning_epochs=5,
         num_mini_batches=4,
         learning_rate=1.0e-4,
-        schedule="adaptive",
+        schedule="fixed",
         gamma=0.98,
         lam=0.95,
         desired_kl=0.01,
