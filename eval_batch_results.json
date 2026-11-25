@@ -1,0 +1,10 @@
+{
+  "checkpoint": "logs\\rsl_rl\\openarm_lift\\2026-11-09_12-01-00\\model_11097.pt",
+  "total_episodes": 16,
+  "success_rate_percent": 6.25,
+  "topple_rate_percent": 93.75,
+  "miss_target_rate_percent": 0.0,
+  "mean_dist_error_cm": 8.92,
+  "mean_tilt_angle_deg": 71.72,
+  "elapsed_seconds": 10.5
+}

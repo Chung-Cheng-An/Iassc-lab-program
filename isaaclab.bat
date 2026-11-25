@@ -1,5 +1,6 @@
 @echo off
 setlocal EnableExtensions EnableDelayedExpansion
+set "PYTHONUTF8=1"
 
 rem Copyright (c) 2022-2025, The Isaac Lab Project Developers.
 rem All rights reserved.
@@ -143,6 +144,7 @@ if errorlevel 1 (
 ) else (
     rem if isaac sim installed from pip
     set isaacsim_exe=isaacsim isaacsim.exp.full
+    goto :eof
 )
 rem check if there is a python path available
 if not exist "%isaacsim_exe%" (

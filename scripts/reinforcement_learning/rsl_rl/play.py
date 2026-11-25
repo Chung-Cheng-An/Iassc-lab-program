@@ -47,6 +47,13 @@ if args_cli.video:
 # clear out sys.argv for Hydra
 sys.argv = [sys.argv[0]] + hydra_args
 
+# Mute Omniverse C++ warning logs and disable crashing Windows Kit menus
+log_args = "--/log/level=error --/log/fileLogLevel=error --/log/outputStreamLevel=error --/app/menu/createMenu=false"
+if getattr(args_cli, "kit_args", None):
+    args_cli.kit_args += f" {log_args}"
+else:
+    args_cli.kit_args = log_args
+
 # launch omniverse app
 app_launcher = AppLauncher(args_cli)
 simulation_app = app_launcher.app

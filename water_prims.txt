@@ -1,0 +1,10 @@
+=== All Prims in SM_Mug_Water.usd ===
+Path: /Root, Type: Xform
+Path: /Root/SM_Mug_D1, Type: Xform
+Path: /Root/SM_Mug_D1/Looks, Type: Scope
+Path: /Root/SM_Mug_D1/Looks/M_Mug_D1, Type: Material
+Path: /Root/SM_Mug_D1/Looks/M_Mug_D1/M_Mug_D1, Type: Shader
+Path: /Root/SM_Mug_D1/Looks/M_Water, Type: Material
+Path: /Root/SM_Mug_D1/Looks/M_Water/PBRShader, Type: Shader
+Path: /Root/SM_Mug_D1/SM_Mug_D1, Type: Mesh
+Path: /Root/SM_Mug_D1/Water, Type: Cylinder

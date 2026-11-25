@@ -17,9 +17,6 @@ import logging
 import os
 import sys
 import warnings
-import numpy as np
-import torch
-import gymnasium as gym
 
 # Suppress python warnings
 warnings.filterwarnings("ignore")
@@ -57,6 +54,11 @@ else:
 
 app_launcher = AppLauncher(args_cli)
 simulation_app = app_launcher.app
+
+"""Rest everything follows (SimulationApp must be created first)."""
+import numpy as np
+import torch
+import gymnasium as gym
 
 logging.getLogger().setLevel(logging.ERROR)
 logging.getLogger("isaaclab").setLevel(logging.ERROR)
@@ -192,10 +194,20 @@ def main():
         print("[ERROR] 請先安裝 ultralytics!")
         return
 
-    # 自動解析 Checkpoint 權重檔
+    # 根據 mode 自動解析預設的最佳 Checkpoint 權重檔
+    STAGE1_REACH_CHECKPOINT = r"C:\Users\user\Desktop\IsaacLab\logs\rsl_rl\openarm_lift\2026-10-15_23-53-51\model_2999.pt"
+    STAGE2_GRASP_CHECKPOINT = r"C:\Users\user\Desktop\IsaacLab\logs\rsl_rl\openarm_lift\2026-10-16_02-18-30\model_4498.pt"
+
     checkpoint_path = args_cli.checkpoint
     if not checkpoint_path:
-        checkpoint_path = find_latest_checkpoint()
+        if args_cli.mode == "reach" and os.path.exists(STAGE1_REACH_CHECKPOINT):
+            checkpoint_path = STAGE1_REACH_CHECKPOINT
+            print(f"[INFO] 未指定 checkpoint，已自動選擇 Stage 1 REACH 最佳模型: {checkpoint_path}")
+        elif args_cli.mode == "grasp" and os.path.exists(STAGE2_GRASP_CHECKPOINT):
+            checkpoint_path = STAGE2_GRASP_CHECKPOINT
+            print(f"[INFO] 未指定 checkpoint，已自動選擇 Stage 2 GRASP 最佳模型: {checkpoint_path}")
+        else:
+            checkpoint_path = find_latest_checkpoint()
     if not checkpoint_path or not os.path.exists(checkpoint_path):
         checkpoint_path = DEFAULT_CHECKPOINT
     if not os.path.exists(checkpoint_path):

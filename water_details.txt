@@ -1,0 +1,6 @@
+Water prim: Usd.Prim(</Root/SM_Mug_D1/Water>)
+Radius: 3.75
+Height: 4.5
+Axis: Z
+Xform ops: ['xformOp:translate']
+Op: xformOp:translate (0, 0, 3.05)

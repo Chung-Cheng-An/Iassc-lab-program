@@ -1,0 +1,11 @@
+# Generated 2026-11-05T16:21:56
+source_checkpoint: logs/rsl_rl/openarm_lift/2026-10-16_02-18-30/model_4498.pt
+obs_dim: 36
+action_dim: 8
+activation: elu
+sim_dt: 0.01
+decimation: 2
+control_hz: 50.0
+note: policy.pt takes RAW observations (normalization included). Output = raw action.
+# Obs order / action scale / default joint pos / joint order: see params/env.yaml
+#   target_joint_pos = default_joint_pos + action_scale * action   (for JointPositionAction, use_default_offset=True)

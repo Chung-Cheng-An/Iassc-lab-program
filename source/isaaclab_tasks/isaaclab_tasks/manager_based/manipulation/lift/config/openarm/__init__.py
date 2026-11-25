@@ -136,24 +136,24 @@ gym.register(
 )
 
 ##
-# Cup Curriculum — Stage 5: lica
+# Cup Curriculum — Stage 5: Pick and Place (Grasp, Lift & Place on Table)
 ##
 
 gym.register(
-    id="Isaac-OpenArm-lica-v0",
+    id="Isaac-Cup-PickPlace-OpenArm-v0",
     entry_point="isaaclab.envs:ManagerBasedRLEnv",
     kwargs={
-        "env_cfg_entry_point": f"{__name__}.cup_lica_env:OpenArmRotateEnvCfg",
+        "env_cfg_entry_point": f"{__name__}.cup_pick_place_env_cfg:CupPickPlaceEnvCfg",
         "rsl_rl_cfg_entry_point": f"{agents.__name__}.rsl_rl_ppo_cfg:OpenArmLiftCubePPORunnerCfg",
     },
     disable_env_checker=True,
 )
 
 gym.register(
-    id="Isaac-OpenArm-Rotate-Play-v0",
+    id="Isaac-Cup-PickPlace-OpenArm-Play-v0",
     entry_point="isaaclab.envs:ManagerBasedRLEnv",
     kwargs={
-        "env_cfg_entry_point": f"{__name__}.cup_rotate_env_cfg:OpenArmRotateEnvCfg_PLAY",
+        "env_cfg_entry_point": f"{__name__}.cup_pick_place_env_cfg:CupPickPlaceEnvCfg_PLAY",
         "rsl_rl_cfg_entry_point": f"{agents.__name__}.rsl_rl_ppo_cfg:OpenArmLiftCubePPORunnerCfg",
     },
     disable_env_checker=True,

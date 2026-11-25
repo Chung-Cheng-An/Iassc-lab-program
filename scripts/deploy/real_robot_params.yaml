@@ -1,0 +1,45 @@
+# Real-robot parameters (edit on the robot PC). Everything here is about the REAL world.
+
+topics:
+  joint_states: /joint_states
+  image: /image_raw
+  arm_cmd: /right_joint_trajectory_controller/joint_trajectory      # trajectory_msgs/JointTrajectory
+  gripper_cmd: /right_gripper_controller/joint_trajectory           # trajectory_msgs/JointTrajectory (finger joints)
+
+# map sim joint name -> real joint name (only if they differ). Missing joints are treated as "at default pose".
+joint_name_map: {}
+  # openarm_right_joint1: right_joint1
+
+# ---- camera (OpenCV convention: x right, y down, z forward) ----
+camera:
+  # intrinsics: get from camera_calibration (ROS) / cv2.calibrateCamera
+  fx: 600.0
+  fy: 600.0
+  cx: 320.0
+  cy: 240.0
+  # 4x4 pose of the camera expressed in the ROBOT BASE frame (openarm base_link). MUST be calibrated!
+  T_base_cam:
+    - [0.0, -0.6, 0.8, 0.07]
+    - [-1.0, 0.0, 0.0, 0.0]
+    - [0.0, -0.8, -0.6, 0.52]
+    - [0.0, 0.0, 0.0, 1.0]
+
+# ---- cup detection (no depth: ray from the camera pixel intersected with the table plane) ----
+vision:
+  yolo_weights: yolov8n.pt
+  yolo_class: cup            # COCO class name
+  conf: 0.25
+  cup_z_base: 0.197          # height of the cup ROOT in the base frame (sim used 0.197 = table surface). MEASURE on the real robot.
+  cup_radius: 0.035          # m; pushes the table-contact point (bottom of the box) toward the cup centre
+  ema: 0.5                   # smoothing of the cup position (1 = no smoothing)
+  max_age_s: 0.5             # stop moving if no fresh detection for this long
+
+# ---- safety ----
+safety:
+  dry_run: true              # true = compute & print only, send NOTHING to the robot
+  max_joint_step: 0.02       # rad per control tick (0.02 @50Hz = 1 rad/s) hard rate limit on the arm
+  lowpass: 0.5               # 1 = no filter; smaller = smoother
+  start_tolerance: 0.2       # rad; refuse to start if arm is further than this from the sim default pose
+  max_steps_reach: 80        # same episode length as the sim demo
+  max_steps_grasp: 180
+
